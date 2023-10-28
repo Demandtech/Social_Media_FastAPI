@@ -1,0 +1,541 @@
+2023-10-19 01:09:46.943 WAT [690] LOG:  starting PostgreSQL 12.15 on x86_64-apple-darwin17.7.0, compiled by Apple LLVM version 10.0.0 (clang-1000.10.44.4), 64-bit
+2023-10-19 01:09:46.946 WAT [690] LOG:  listening on IPv6 address "::1", port 5432
+2023-10-19 01:09:46.946 WAT [690] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2023-10-19 01:09:46.947 WAT [690] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2023-10-19 01:09:46.998 WAT [691] LOG:  database system was shut down at 2023-10-18 09:25:04 WAT
+2023-10-19 01:09:47.025 WAT [690] LOG:  database system is ready to accept connections
+2023-10-19 01:25:08.902 WAT [888] ERROR:  syntax error at or near "FROM" at character 25
+2023-10-19 01:25:08.902 WAT [888] STATEMENT:  SELECT id WHERE id > 10 FROM products;
+2023-10-19 01:28:04.599 WAT [888] ERROR:  column "TV" does not exist at character 37
+2023-10-19 01:28:04.599 WAT [888] STATEMENT:  SELECT * FROM products WHERE name = "TV";
+2023-10-19 01:34:49.269 WAT [888] ERROR:  null value in column "price" violates not-null constraint
+2023-10-19 01:34:49.269 WAT [888] DETAIL:  Failing row contains (TV BLUE, null, 16, f, 0, 2023-10-19 01:34:49.268795+01).
+2023-10-19 01:34:49.269 WAT [888] STATEMENT:  BEGIN;
+	INSERT INTO "public"."products"("name") VALUES('TV BLUE') RETURNING "name", "price", "id", "is_sale", "inventory", "created_at";
+	
+2023-10-19 01:56:28.403 WAT [888] ERROR:  syntax error at or near ";" at character 45
+2023-10-19 01:56:28.403 WAT [888] STATEMENT:  DELETE FROM products WHERE id = 20 RETURNING;
+2023-10-19 02:03:53.850 WAT [888] ERROR:  relation "public.products" does not exist at character 358
+2023-10-19 02:03:53.850 WAT [888] STATEMENT:  SELECT pg_class.oid, obj_description(pg_class.oid, 'pg_class') AS comment, COALESCE(spcname, (select spcname from pg_tablespace, pg_database where pg_tablespace.oid=dattablespace and datname='fastapi')) as tablespace, pg_get_viewdef(pg_class.oid,true) AS viewdef FROM pg_class LEFT JOIN pg_tablespace ON pg_tablespace.oid=reltablespace WHERE pg_class.oid = '"public"."products"'::regclass::oid AND relkind='r';
+	SELECT attnum, attname, atttypid, attnotnull, format_type(atttypid,atttypmod), pg_get_expr(adbin, attrelid, true) AS adsrc, col_description(attrelid, attnum), typcategory, has_column_privilege(attrelid,attnum,'SELECT'), attgenerated, attidentity, (SELECT row_to_json(s) FROM pg_sequence s JOIN pg_depend d ON (d.classid='pg_class'::regclass AND s.seqrelid=d.objid) WHERE d.refclassid='pg_class'::regclass AND d.refobjid=attrelid AND d.refobjsubid=attnum LIMIT 1) as sequence_options
+	FROM pg_attribute
+	LEFT JOIN pg_type ON atttypid=pg_type.oid
+	LEFT JOIN pg_attrdef ON adrelid=attrelid AND adnum=attnum
+	WHERE attrelid = '"public"."products"'::regclass AND NOT attisdropped
+	ORDER BY attnum;
+	SELECT pg_class.oid, pg_class.relname, indisunique, indisprimary, indisexclusion, indkey, pg_get_indexdef(indexrelid, 0, true) AS definition, ARRAY(select pg_get_indexdef(indexrelid, attnum, true) FROM pg_attribute WHERE attrelid = indexrelid ORDER BY attnum) AS expressions, obj_description(pg_class.oid, 'pg_class') AS comment, indoption, ARRAY(SELECT pg_collation.collname FROM unnest(indcollation) AS t(colid) LEFT JOIN pg_collation ON pg_collation.oid = colid) AS collations, ARRAY(SELECT pg_opclass.opcname FROM generate_series(0, indnatts-1) AS t(i) LEFT JOIN pg_opclass ON pg_opclass.oid = indclass[i]) AS opclasses, pg_get_expr(indpred,indrelid, true), amname FROM pg_index LEFT JOIN pg_class ON pg_class.oid = indexrelid LEFT JOIN pg_am ON pg_class.relam = pg_am.oid WHERE indrelid = '"public"."products"'::regclass ORDER BY pg_class.oid; 
+	SELECT pg_constraint.oid, conname, contype, conkey, nspname AS fschema, relname AS ftable, confkey AS fkeys, pg_get_expr(conbin, conrelid, true), pg_get_constraintdef(pg_constraint.oid, true), confupdtype, confdeltype, obj_description(pg_constraint.oid, 'pg_constraint'), condeferrable, condeferred, connoinherit 
+	FROM pg_constraint
+	LEFT JOIN pg_class ON pg_class.oid = confrelid
+	LEFT JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+	WHERE conrelid = '"public"."products"'::regclass;
+	SELECT pg_type.oid, ARRAY(SELECT enumlabel FROM pg_enum WHERE enumtypid=pg_type.oid ORDER BY enumsortorder)
+	FROM pg_type
+	WHERE pg_type.oid IN (SELECT atttypid FROM pg_attribute WHERE attrelid = '"public"."products"'::regclass) AND typtype='e';
+	
+2023-10-19 02:08:33.641 WAT [888] ERROR:  both default and identity specified for column "id" of table "posts"
+2023-10-19 02:08:33.641 WAT [888] STATEMENT:  CREATE TABLE "public"."posts" (
+	    "id" serial GENERATED ALWAYS AS IDENTITY,
+	    "title" character varying NOT NULL,
+	    "content" character varying NOT NULL,
+	    "published" boolean NOT NULL DEFAULT 'True',
+	    "created_at" timestamp with time zone NOT NULL GENERATED ALWAYS AS (NOW()) STORED,
+	    PRIMARY KEY ("id")
+	);
+	
+2023-10-19 02:09:00.886 WAT [888] ERROR:  multiple default values specified for column "id" of table "posts"
+2023-10-19 02:09:00.886 WAT [888] STATEMENT:  CREATE TABLE "public"."posts" (
+	    "id" serial DEFAULT nextval(''::regclass),
+	    "title" character varying NOT NULL,
+	    "content" character varying NOT NULL,
+	    "published" boolean NOT NULL DEFAULT 'True',
+	    "created_at" timestamp with time zone NOT NULL GENERATED ALWAYS AS (NOW()) STORED,
+	    PRIMARY KEY ("id")
+	);
+	
+2023-10-19 02:09:27.434 WAT [888] ERROR:  generation expression is not immutable
+2023-10-19 02:09:27.434 WAT [888] STATEMENT:  CREATE TABLE "public"."posts" (
+	    "id" serial,
+	    "title" character varying NOT NULL,
+	    "content" character varying NOT NULL,
+	    "published" boolean NOT NULL DEFAULT 'True',
+	    "created_at" timestamp with time zone NOT NULL GENERATED ALWAYS AS (NOW()) STORED,
+	    PRIMARY KEY ("id")
+	);
+	
+2023-10-19 02:09:45.515 WAT [888] ERROR:  relation "now()" does not exist at character 248
+2023-10-19 02:09:45.515 WAT [888] STATEMENT:  CREATE TABLE "public"."posts" (
+	    "id" serial,
+	    "title" character varying NOT NULL,
+	    "content" character varying NOT NULL,
+	    "published" boolean NOT NULL DEFAULT 'True',
+	    "created_at" timestamp with time zone NOT NULL DEFAULT nextval('NOW()'::regclass),
+	    PRIMARY KEY ("id")
+	);
+	
+2023-10-19 02:21:01.313 WAT [2734] FATAL:  role "demand" does not exist
+2023-10-19 02:23:40.979 WAT [3681] LOG:  could not receive data from client: Connection reset by peer
+2023-10-19 02:26:05.717 WAT [3865] FATAL:  role "demandbt" does not exist
+2023-10-19 02:26:07.728 WAT [3868] FATAL:  role "demandbt" does not exist
+2023-10-19 02:26:09.736 WAT [3873] FATAL:  role "demandbt" does not exist
+2023-10-19 02:26:11.748 WAT [3877] FATAL:  role "demandbt" does not exist
+2023-10-19 02:26:13.759 WAT [3879] FATAL:  role "demandbt" does not exist
+2023-10-19 02:26:15.772 WAT [3883] FATAL:  role "demandbt" does not exist
+2023-10-19 02:46:56.757 WAT [5326] ERROR:  syntax error at or near "{" at character 30
+2023-10-19 02:46:56.757 WAT [5326] STATEMENT:  SELECT FROM posts WHERE id = {id}
+2023-10-19 02:47:57.573 WAT [5383] ERROR:  syntax error at or near "{" at character 32
+2023-10-19 02:47:57.573 WAT [5383] STATEMENT:  SELECT * FROM posts WHERE id = {id}
+2023-10-19 02:55:43.077 WAT [6036] ERROR:  syntax error at or near "*" at character 8
+2023-10-19 02:55:43.077 WAT [6036] STATEMENT:  DELETE * FROM posts WHERE id = '6' RETURNING * 
+2023-10-19 03:31:45.574 WAT [888] ERROR:  relation "public.posts" does not exist at character 358
+2023-10-19 03:31:45.574 WAT [888] STATEMENT:  SELECT pg_class.oid, obj_description(pg_class.oid, 'pg_class') AS comment, COALESCE(spcname, (select spcname from pg_tablespace, pg_database where pg_tablespace.oid=dattablespace and datname='fastapi')) as tablespace, pg_get_viewdef(pg_class.oid,true) AS viewdef FROM pg_class LEFT JOIN pg_tablespace ON pg_tablespace.oid=reltablespace WHERE pg_class.oid = '"public"."posts"'::regclass::oid AND relkind='r';
+	SELECT attnum, attname, atttypid, attnotnull, format_type(atttypid,atttypmod), pg_get_expr(adbin, attrelid, true) AS adsrc, col_description(attrelid, attnum), typcategory, has_column_privilege(attrelid,attnum,'SELECT'), attgenerated, attidentity, (SELECT row_to_json(s) FROM pg_sequence s JOIN pg_depend d ON (d.classid='pg_class'::regclass AND s.seqrelid=d.objid) WHERE d.refclassid='pg_class'::regclass AND d.refobjid=attrelid AND d.refobjsubid=attnum LIMIT 1) as sequence_options
+	FROM pg_attribute
+	LEFT JOIN pg_type ON atttypid=pg_type.oid
+	LEFT JOIN pg_attrdef ON adrelid=attrelid AND adnum=attnum
+	WHERE attrelid = '"public"."posts"'::regclass AND NOT attisdropped
+	ORDER BY attnum;
+	SELECT pg_class.oid, pg_class.relname, indisunique, indisprimary, indisexclusion, indkey, pg_get_indexdef(indexrelid, 0, true) AS definition, ARRAY(select pg_get_indexdef(indexrelid, attnum, true) FROM pg_attribute WHERE attrelid = indexrelid ORDER BY attnum) AS expressions, obj_description(pg_class.oid, 'pg_class') AS comment, indoption, ARRAY(SELECT pg_collation.collname FROM unnest(indcollation) AS t(colid) LEFT JOIN pg_collation ON pg_collation.oid = colid) AS collations, ARRAY(SELECT pg_opclass.opcname FROM generate_series(0, indnatts-1) AS t(i) LEFT JOIN pg_opclass ON pg_opclass.oid = indclass[i]) AS opclasses, pg_get_expr(indpred,indrelid, true), amname FROM pg_index LEFT JOIN pg_class ON pg_class.oid = indexrelid LEFT JOIN pg_am ON pg_class.relam = pg_am.oid WHERE indrelid = '"public"."posts"'::regclass ORDER BY pg_class.oid; 
+	SELECT pg_constraint.oid, conname, contype, conkey, nspname AS fschema, relname AS ftable, confkey AS fkeys, pg_get_expr(conbin, conrelid, true), pg_get_constraintdef(pg_constraint.oid, true), confupdtype, confdeltype, obj_description(pg_constraint.oid, 'pg_constraint'), condeferrable, condeferred, connoinherit 
+	FROM pg_constraint
+	LEFT JOIN pg_class ON pg_class.oid = confrelid
+	LEFT JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+	WHERE conrelid = '"public"."posts"'::regclass;
+	SELECT pg_type.oid, ARRAY(SELECT enumlabel FROM pg_enum WHERE enumtypid=pg_type.oid ORDER BY enumsortorder)
+	FROM pg_type
+	WHERE pg_type.oid IN (SELECT atttypid FROM pg_attribute WHERE attrelid = '"public"."posts"'::regclass) AND typtype='e';
+	
+2023-10-19 03:46:06.047 WAT [888] ERROR:  relation "public.posts" does not exist at character 358
+2023-10-19 03:46:06.047 WAT [888] STATEMENT:  SELECT pg_class.oid, obj_description(pg_class.oid, 'pg_class') AS comment, COALESCE(spcname, (select spcname from pg_tablespace, pg_database where pg_tablespace.oid=dattablespace and datname='fastapi')) as tablespace, pg_get_viewdef(pg_class.oid,true) AS viewdef FROM pg_class LEFT JOIN pg_tablespace ON pg_tablespace.oid=reltablespace WHERE pg_class.oid = '"public"."posts"'::regclass::oid AND relkind='r';
+	SELECT attnum, attname, atttypid, attnotnull, format_type(atttypid,atttypmod), pg_get_expr(adbin, attrelid, true) AS adsrc, col_description(attrelid, attnum), typcategory, has_column_privilege(attrelid,attnum,'SELECT'), attgenerated, attidentity, (SELECT row_to_json(s) FROM pg_sequence s JOIN pg_depend d ON (d.classid='pg_class'::regclass AND s.seqrelid=d.objid) WHERE d.refclassid='pg_class'::regclass AND d.refobjid=attrelid AND d.refobjsubid=attnum LIMIT 1) as sequence_options
+	FROM pg_attribute
+	LEFT JOIN pg_type ON atttypid=pg_type.oid
+	LEFT JOIN pg_attrdef ON adrelid=attrelid AND adnum=attnum
+	WHERE attrelid = '"public"."posts"'::regclass AND NOT attisdropped
+	ORDER BY attnum;
+	SELECT pg_class.oid, pg_class.relname, indisunique, indisprimary, indisexclusion, indkey, pg_get_indexdef(indexrelid, 0, true) AS definition, ARRAY(select pg_get_indexdef(indexrelid, attnum, true) FROM pg_attribute WHERE attrelid = indexrelid ORDER BY attnum) AS expressions, obj_description(pg_class.oid, 'pg_class') AS comment, indoption, ARRAY(SELECT pg_collation.collname FROM unnest(indcollation) AS t(colid) LEFT JOIN pg_collation ON pg_collation.oid = colid) AS collations, ARRAY(SELECT pg_opclass.opcname FROM generate_series(0, indnatts-1) AS t(i) LEFT JOIN pg_opclass ON pg_opclass.oid = indclass[i]) AS opclasses, pg_get_expr(indpred,indrelid, true), amname FROM pg_index LEFT JOIN pg_class ON pg_class.oid = indexrelid LEFT JOIN pg_am ON pg_class.relam = pg_am.oid WHERE indrelid = '"public"."posts"'::regclass ORDER BY pg_class.oid; 
+	SELECT pg_constraint.oid, conname, contype, conkey, nspname AS fschema, relname AS ftable, confkey AS fkeys, pg_get_expr(conbin, conrelid, true), pg_get_constraintdef(pg_constraint.oid, true), confupdtype, confdeltype, obj_description(pg_constraint.oid, 'pg_constraint'), condeferrable, condeferred, connoinherit 
+	FROM pg_constraint
+	LEFT JOIN pg_class ON pg_class.oid = confrelid
+	LEFT JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+	WHERE conrelid = '"public"."posts"'::regclass;
+	SELECT pg_type.oid, ARRAY(SELECT enumlabel FROM pg_enum WHERE enumtypid=pg_type.oid ORDER BY enumsortorder)
+	FROM pg_type
+	WHERE pg_type.oid IN (SELECT atttypid FROM pg_attribute WHERE attrelid = '"public"."posts"'::regclass) AND typtype='e';
+	
+2023-10-21 04:23:25.910 WAT [1142] LOG:  starting PostgreSQL 12.15 on x86_64-apple-darwin17.7.0, compiled by Apple LLVM version 10.0.0 (clang-1000.10.44.4), 64-bit
+2023-10-21 04:23:25.915 WAT [1142] LOG:  listening on IPv6 address "::1", port 5432
+2023-10-21 04:23:25.915 WAT [1142] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2023-10-21 04:23:25.916 WAT [1142] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2023-10-21 04:23:26.016 WAT [1143] LOG:  database system was shut down at 2023-10-21 04:21:36 WAT
+2023-10-21 04:23:26.038 WAT [1142] LOG:  database system is ready to accept connections
+2023-10-21 04:51:50.573 WAT [2832] ERROR:  duplicate key value violates unique constraint "users_email_key"
+2023-10-21 04:51:50.573 WAT [2832] DETAIL:  Key (email)=(john@gmail.com) already exists.
+2023-10-21 04:51:50.573 WAT [2832] STATEMENT:  BEGIN;
+	INSERT INTO "public"."users"("email", "password") VALUES('john@gmail.com', 'password1') RETURNING "id", "email", "password";
+	
+2023-10-21 05:00:38.558 WAT [3553] ERROR:  column users.created_at does not exist at character 97
+2023-10-21 05:00:38.558 WAT [3553] STATEMENT:  INSERT INTO users (email, password) VALUES ('carl@gmail.com', 'password12') RETURNING users.id, users.created_at
+2023-10-21 05:46:38.333 WAT [6969] LOG:  could not receive data from client: Connection reset by peer
+2023-10-21 05:46:38.334 WAT [6969] LOG:  unexpected EOF on client connection with an open transaction
+2023-10-21 07:29:01.535 WAT [14076] ERROR:  duplicate key value violates unique constraint "users_email_key"
+2023-10-21 07:29:01.535 WAT [14076] DETAIL:  Key (email)=(carl@gmail.com) already exists.
+2023-10-21 07:29:01.535 WAT [14076] STATEMENT:  INSERT INTO users (email, password) VALUES ('carl@gmail.com', '$2b$12$vQofCdCdaLrbQlC7ij/1Y.X9Eu5GX.QbwwWJjkiSx8qLR2eViwXd6') RETURNING users.id
+2023-10-21 07:30:48.760 WAT [1142] LOG:  received SIGHUP, reloading configuration files
+2023-10-21 07:32:11.327 WAT [14076] ERROR:  duplicate key value violates unique constraint "users_email_key"
+2023-10-21 07:32:11.327 WAT [14076] DETAIL:  Key (email)=(carl1@gmail.com) already exists.
+2023-10-21 07:32:11.327 WAT [14076] STATEMENT:  INSERT INTO users (email, password) VALUES ('carl1@gmail.com', '$2b$12$FtZKG9cCwOqSxipDCYmIDOXl/D3oALdBr0QB3/RP4kp.RHMoH4SFy') RETURNING users.id
+2023-10-21 07:33:53.607 WAT [14076] ERROR:  duplicate key value violates unique constraint "users_email_key"
+2023-10-21 07:33:53.607 WAT [14076] DETAIL:  Key (email)=(carl1@gmail.com) already exists.
+2023-10-21 07:33:53.607 WAT [14076] STATEMENT:  INSERT INTO users (email, password) VALUES ('carl1@gmail.com', '$2b$12$/AgVGWR98kHxH5UjVFvUGuX1GTU4SCUfak79avDVJr9Dk30nn4Az2') RETURNING users.id
+2023-10-21 07:47:57.955 WAT [1142] LOG:  received smart shutdown request
+2023-10-21 07:47:57.956 WAT [14076] FATAL:  terminating connection due to administrator command
+2023-10-21 07:47:57.961 WAT [1142] LOG:  background worker "logical replication launcher" (PID 1149) exited with exit code 1
+2023-10-21 07:47:57.976 WAT [1144] LOG:  shutting down
+2023-10-21 07:47:57.991 WAT [1142] LOG:  database system is shut down
+2023-10-21 08:10:09.002 WAT [659] LOG:  starting PostgreSQL 12.15 on x86_64-apple-darwin17.7.0, compiled by Apple LLVM version 10.0.0 (clang-1000.10.44.4), 64-bit
+2023-10-21 08:10:09.014 WAT [659] LOG:  listening on IPv6 address "::1", port 5432
+2023-10-21 08:10:09.014 WAT [659] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2023-10-21 08:10:09.015 WAT [659] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2023-10-21 08:10:09.084 WAT [662] LOG:  database system was shut down at 2023-10-21 07:47:57 WAT
+2023-10-21 08:10:09.107 WAT [659] LOG:  database system is ready to accept connections
+2023-10-21 08:19:28.148 WAT [659] LOG:  received SIGHUP, reloading configuration files
+2023-10-21 09:19:26.576 WAT [659] LOG:  received smart shutdown request
+2023-10-21 09:19:26.577 WAT [6216] FATAL:  terminating connection due to administrator command
+2023-10-21 09:19:26.577 WAT [1010] FATAL:  terminating connection due to administrator command
+2023-10-21 09:19:26.580 WAT [659] LOG:  background worker "logical replication launcher" (PID 668) exited with exit code 1
+2023-10-21 09:19:26.600 WAT [663] LOG:  shutting down
+2023-10-21 09:19:26.623 WAT [659] LOG:  database system is shut down
+2023-10-24 03:51:12.394 WAT [588] LOG:  starting PostgreSQL 12.15 on x86_64-apple-darwin17.7.0, compiled by Apple LLVM version 10.0.0 (clang-1000.10.44.4), 64-bit
+2023-10-24 03:51:12.397 WAT [588] LOG:  listening on IPv6 address "::1", port 5432
+2023-10-24 03:51:12.397 WAT [588] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2023-10-24 03:51:12.398 WAT [588] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2023-10-24 03:51:12.446 WAT [589] LOG:  database system was shut down at 2023-10-24 03:47:51 WAT
+2023-10-24 03:51:12.459 WAT [588] LOG:  database system is ready to accept connections
+2023-10-24 05:04:24.643 WAT [2676] LOG:  unexpected EOF on client connection with an open transaction
+2023-10-24 06:20:09.692 WAT [588] LOG:  received SIGHUP, reloading configuration files
+2023-10-24 06:20:16.257 WAT [4805] FATAL:  terminating connection due to administrator command
+2023-10-24 06:20:16.260 WAT [588] LOG:  received smart shutdown request
+2023-10-24 06:20:16.261 WAT [588] LOG:  background worker "logical replication launcher" (PID 595) exited with exit code 1
+2023-10-24 06:20:16.263 WAT [590] LOG:  shutting down
+2023-10-24 06:20:16.272 WAT [588] LOG:  database system is shut down
+2023-10-27 02:13:31.804 WAT [878] LOG:  starting PostgreSQL 12.15 on x86_64-apple-darwin17.7.0, compiled by Apple LLVM version 10.0.0 (clang-1000.10.44.4), 64-bit
+2023-10-27 02:13:31.810 WAT [878] LOG:  listening on IPv6 address "::1", port 5432
+2023-10-27 02:13:31.811 WAT [878] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2023-10-27 02:13:31.812 WAT [878] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2023-10-27 02:13:31.933 WAT [882] LOG:  database system was shut down at 2023-10-26 12:13:21 WAT
+2023-10-27 02:13:32.081 WAT [878] LOG:  database system is ready to accept connections
+2023-10-27 02:13:37.131 WAT [911] FATAL:  lock file "postmaster.pid" already exists
+2023-10-27 02:13:37.131 WAT [911] HINT:  Is another postmaster (PID 878) running in data directory "/Users/demandbtc/database_data"?
+2023-10-27 02:31:54.291 WAT [1281] ERROR:  null value in column "content" violates not-null constraint
+2023-10-27 02:31:54.291 WAT [1281] DETAIL:  Failing row contains (59, First, null, t, 2023-10-27 02:31:54.290985+01, null).
+2023-10-27 02:31:54.291 WAT [1281] STATEMENT:  BEGIN;
+	INSERT INTO "public"."posts"("title") VALUES('First') RETURNING "id", "title", "content", "published", "created_at", "user_id";
+	INSERT INTO "public"."posts"("title", "content") VALUES('first Post', 'some renadom content') RETURNING "id", "title", "content", "published", "created_at", "user_id";
+	
+2023-10-27 02:32:44.873 WAT [1281] ERROR:  null value in column "content" violates not-null constraint
+2023-10-27 02:32:44.873 WAT [1281] DETAIL:  Failing row contains (60, First, null, t, 2023-10-27 02:32:44.873324+01, null).
+2023-10-27 02:32:44.873 WAT [1281] STATEMENT:  BEGIN;
+	INSERT INTO "public"."posts"("title") VALUES('First') RETURNING "id", "title", "content", "published", "created_at", "user_id";
+	INSERT INTO "public"."posts"("title", "content", "user_id") VALUES('first Post', 'some renadom content', 12) RETURNING "id", "title", "content", "published", "created_at", "user_id";
+	
+2023-10-27 02:33:01.320 WAT [1281] ERROR:  null value in column "content" violates not-null constraint
+2023-10-27 02:33:01.320 WAT [1281] DETAIL:  Failing row contains (61, First, null, t, 2023-10-27 02:33:01.319788+01, null).
+2023-10-27 02:33:01.320 WAT [1281] STATEMENT:  BEGIN;
+	INSERT INTO "public"."posts"("title") VALUES('First') RETURNING "id", "title", "content", "published", "created_at", "user_id";
+	INSERT INTO "public"."posts"("title", "content", "user_id") VALUES('first Post', 'some renadom content', 12) RETURNING "id", "title", "content", "published", "created_at", "user_id";
+	
+2023-10-27 02:34:23.057 WAT [1281] ERROR:  insert or update on table "posts" violates foreign key constraint "posts_users_fkey"
+2023-10-27 02:34:23.057 WAT [1281] DETAIL:  Key (user_id)=(40) is not present in table "users".
+2023-10-27 02:34:23.057 WAT [1281] STATEMENT:  BEGIN;
+	UPDATE "public"."posts" SET "user_id"=40 WHERE "id"=62 RETURNING "id", "title", "content", "published", "created_at", "user_id";
+	
+2023-10-27 02:36:26.028 WAT [1281] ERROR:  syntax error at or near "user" at character 13
+2023-10-27 02:36:26.028 WAT [1281] STATEMENT:  delete from user where id = 9
+2023-10-27 02:43:38.228 WAT [1281] ERROR:  relation "public.posts" does not exist at character 358
+2023-10-27 02:43:38.228 WAT [1281] STATEMENT:  SELECT pg_class.oid, obj_description(pg_class.oid, 'pg_class') AS comment, COALESCE(spcname, (select spcname from pg_tablespace, pg_database where pg_tablespace.oid=dattablespace and datname='fastapi')) as tablespace, pg_get_viewdef(pg_class.oid,true) AS viewdef FROM pg_class LEFT JOIN pg_tablespace ON pg_tablespace.oid=reltablespace WHERE pg_class.oid = '"public"."posts"'::regclass::oid AND relkind='r';
+	SELECT attnum, attname, atttypid, attnotnull, format_type(atttypid,atttypmod), pg_get_expr(adbin, attrelid, true) AS adsrc, col_description(attrelid, attnum), typcategory, has_column_privilege(attrelid,attnum,'SELECT'), attgenerated, attidentity, (SELECT row_to_json(s) FROM pg_sequence s JOIN pg_depend d ON (d.classid='pg_class'::regclass AND s.seqrelid=d.objid) WHERE d.refclassid='pg_class'::regclass AND d.refobjid=attrelid AND d.refobjsubid=attnum LIMIT 1) as sequence_options
+	FROM pg_attribute
+	LEFT JOIN pg_type ON atttypid=pg_type.oid
+	LEFT JOIN pg_attrdef ON adrelid=attrelid AND adnum=attnum
+	WHERE attrelid = '"public"."posts"'::regclass AND NOT attisdropped
+	ORDER BY attnum;
+	SELECT pg_class.oid, pg_class.relname, indisunique, indisprimary, indisexclusion, indkey, pg_get_indexdef(indexrelid, 0, true) AS definition, ARRAY(select pg_get_indexdef(indexrelid, attnum, true) FROM pg_attribute WHERE attrelid = indexrelid ORDER BY attnum) AS expressions, obj_description(pg_class.oid, 'pg_class') AS comment, indoption, ARRAY(SELECT pg_collation.collname FROM unnest(indcollation) AS t(colid) LEFT JOIN pg_collation ON pg_collation.oid = colid) AS collations, ARRAY(SELECT pg_opclass.opcname FROM generate_series(0, indnatts-1) AS t(i) LEFT JOIN pg_opclass ON pg_opclass.oid = indclass[i]) AS opclasses, pg_get_expr(indpred,indrelid, true), amname FROM pg_index LEFT JOIN pg_class ON pg_class.oid = indexrelid LEFT JOIN pg_am ON pg_class.relam = pg_am.oid WHERE indrelid = '"public"."posts"'::regclass ORDER BY pg_class.oid; 
+	SELECT pg_constraint.oid, conname, contype, conkey, nspname AS fschema, relname AS ftable, confkey AS fkeys, pg_get_expr(conbin, conrelid, true), pg_get_constraintdef(pg_constraint.oid, true), confupdtype, confdeltype, obj_description(pg_constraint.oid, 'pg_constraint'), condeferrable, condeferred, connoinherit 
+	FROM pg_constraint
+	LEFT JOIN pg_class ON pg_class.oid = confrelid
+	LEFT JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+	WHERE conrelid = '"public"."posts"'::regclass;
+	SELECT pg_type.oid, ARRAY(SELECT enumlabel FROM pg_enum WHERE enumtypid=pg_type.oid ORDER BY enumsortorder)
+	FROM pg_type
+	WHERE pg_type.oid IN (SELECT atttypid FROM pg_attribute WHERE attrelid = '"public"."posts"'::regclass) AND typtype='e';
+	
+2023-10-27 02:49:52.050 WAT [2140] ERROR:  null value in column "owner_id" violates not-null constraint
+2023-10-27 02:49:52.050 WAT [2140] DETAIL:  Failing row contains (1, top beaches in florida, check the top beaches out, f, 2023-10-27 02:49:52.042666+01, null).
+2023-10-27 02:49:52.050 WAT [2140] STATEMENT:  INSERT INTO posts (title, content, published, owner_id) VALUES ('top beaches in florida', 'check the top beaches out', false, NULL) RETURNING posts.id, posts.created_at
+2023-10-27 03:01:21.034 WAT [2513] ERROR:  null value in column "owner_id" violates not-null constraint
+2023-10-27 03:01:21.034 WAT [2513] DETAIL:  Failing row contains (4, top beaches in florida, check the top beaches out, f, 2023-10-27 03:01:21.0279+01, null).
+2023-10-27 03:01:21.034 WAT [2513] STATEMENT:  INSERT INTO posts (title, content, published, owner_id) VALUES ('top beaches in florida', 'check the top beaches out', false, NULL) RETURNING posts.id, posts.created_at
+2023-10-27 03:09:55.296 WAT [2746] ERROR:  null value in column "owner_id" violates not-null constraint
+2023-10-27 03:09:55.296 WAT [2746] DETAIL:  Failing row contains (5, top beaches in florida, check the top beaches out, f, 2023-10-27 03:09:55.288355+01, null).
+2023-10-27 03:09:55.296 WAT [2746] STATEMENT:  INSERT INTO posts (title, content, published, owner_id) VALUES ('top beaches in florida', 'check the top beaches out', false, NULL) RETURNING posts.id, posts.created_at
+2023-10-27 03:11:11.573 WAT [2746] ERROR:  null value in column "owner_id" violates not-null constraint
+2023-10-27 03:11:11.573 WAT [2746] DETAIL:  Failing row contains (6, top beaches in florida, check the top beaches out, f, 2023-10-27 03:11:11.564584+01, null).
+2023-10-27 03:11:11.573 WAT [2746] STATEMENT:  INSERT INTO posts (title, content, published, owner_id) VALUES ('top beaches in florida', 'check the top beaches out', false, NULL) RETURNING posts.id, posts.created_at
+2023-10-27 03:14:11.542 WAT [2885] ERROR:  null value in column "owner_id" violates not-null constraint
+2023-10-27 03:14:11.542 WAT [2885] DETAIL:  Failing row contains (7, top beaches in florida, check the top beaches out, f, 2023-10-27 03:14:11.530223+01, null).
+2023-10-27 03:14:11.542 WAT [2885] STATEMENT:  INSERT INTO posts (title, content, published, owner_id) VALUES ('top beaches in florida', 'check the top beaches out', false, NULL) RETURNING posts.id, posts.created_at
+2023-10-27 03:15:08.429 WAT [2929] ERROR:  null value in column "owner_id" violates not-null constraint
+2023-10-27 03:15:08.429 WAT [2929] DETAIL:  Failing row contains (8, top beaches in florida, check the top beaches out, f, 2023-10-27 03:15:08.418958+01, null).
+2023-10-27 03:15:08.429 WAT [2929] STATEMENT:  INSERT INTO posts (title, content, published, owner_id) VALUES ('top beaches in florida', 'check the top beaches out', false, NULL) RETURNING posts.id, posts.created_at
+2023-10-27 03:17:05.601 WAT [2999] ERROR:  null value in column "owner_id" violates not-null constraint
+2023-10-27 03:17:05.601 WAT [2999] DETAIL:  Failing row contains (9, top beaches in florida, check the top beaches out, f, 2023-10-27 03:17:05.595415+01, null).
+2023-10-27 03:17:05.601 WAT [2999] STATEMENT:  INSERT INTO posts (title, content, published, owner_id) VALUES ('top beaches in florida', 'check the top beaches out', false, NULL) RETURNING posts.id, posts.created_at
+2023-10-27 03:22:34.889 WAT [3200] ERROR:  null value in column "owner_id" violates not-null constraint
+2023-10-27 03:22:34.889 WAT [3200] DETAIL:  Failing row contains (10, top beaches in florida, check the top beaches out, f, 2023-10-27 03:22:34.881396+01, null).
+2023-10-27 03:22:34.889 WAT [3200] STATEMENT:  INSERT INTO posts (title, content, published, owner_id) VALUES ('top beaches in florida', 'check the top beaches out', false, NULL) RETURNING posts.id, posts.created_at
+2023-10-27 03:24:15.485 WAT [3264] ERROR:  null value in column "owner_id" violates not-null constraint
+2023-10-27 03:24:15.485 WAT [3264] DETAIL:  Failing row contains (11, top beaches in florida, check the top beaches out, f, 2023-10-27 03:24:15.477113+01, null).
+2023-10-27 03:24:15.485 WAT [3264] STATEMENT:  INSERT INTO posts (title, content, published, owner_id) VALUES ('top beaches in florida', 'check the top beaches out', false, NULL) RETURNING posts.id, posts.created_at
+2023-10-27 03:31:30.095 WAT [3326] ERROR:  null value in column "owner_id" violates not-null constraint
+2023-10-27 03:31:30.095 WAT [3326] DETAIL:  Failing row contains (12, top beaches in florida, check the top beaches out, f, 2023-10-27 03:31:30.088743+01, null).
+2023-10-27 03:31:30.095 WAT [3326] STATEMENT:  INSERT INTO posts (title, content, published, owner_id) VALUES ('top beaches in florida', 'check the top beaches out', false, NULL) RETURNING posts.id, posts.created_at
+2023-10-27 03:33:52.549 WAT [3518] ERROR:  invalid input syntax for type integer: "johndoe@gmail.com" at character 127
+2023-10-27 03:33:52.549 WAT [3518] STATEMENT:  INSERT INTO posts (title, content, published, owner_id) VALUES ('top beaches in florida', 'check the top beaches out', false, 'johndoe@gmail.com') RETURNING posts.id, posts.created_at
+2023-10-27 05:17:40.858 WAT [8019] LOG:  could not receive data from client: Connection reset by peer
+2023-10-27 05:17:40.859 WAT [8019] LOG:  unexpected EOF on client connection with an open transaction
+2023-10-27 05:44:41.479 WAT [1281] ERROR:  multiple primary keys for table "votes" are not allowed at character 170
+2023-10-27 05:44:41.479 WAT [1281] STATEMENT:  CREATE TABLE "public"."votes" (
+	    "post_id" integer GENERATED ALWAYS AS IDENTITY,
+	    "user_id" integer GENERATED ALWAYS AS IDENTITY,
+	    PRIMARY KEY ("post_id"),
+	    PRIMARY KEY ("user_id")
+	);
+	
+2023-10-27 05:48:15.882 WAT [1281] ERROR:  multiple primary keys for table "votes" are not allowed at character 280
+2023-10-27 05:48:15.882 WAT [1281] STATEMENT:  CREATE TABLE "public"."votes" (
+	    "post_id" integer GENERATED ALWAYS AS IDENTITY,
+	    "user_id" integer GENERATED ALWAYS AS IDENTITY,
+	    PRIMARY KEY ("post_id"),
+	    CONSTRAINT "vote_posts_fkey" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE CASCADE,
+	    PRIMARY KEY ("user_id"),
+	    CONSTRAINT "vote_users_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE
+	);
+	
+2023-10-27 05:50:55.079 WAT [1281] ERROR:  multiple primary keys for table "votes" are not allowed at character 280
+2023-10-27 05:50:55.079 WAT [1281] STATEMENT:  CREATE TABLE "public"."votes" (
+	    "post_id" integer GENERATED ALWAYS AS IDENTITY,
+	    "user_id" integer GENERATED ALWAYS AS IDENTITY,
+	    PRIMARY KEY ("post_id"),
+	    CONSTRAINT "vote_posts_fkey" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE CASCADE,
+	    PRIMARY KEY ("user_id"),
+	    CONSTRAINT "vote_users_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE CASCADE
+	);
+2023-10-27 05:52:19.167 WAT [1281] ERROR:  type "interger" does not exist at character 70
+2023-10-27 05:52:19.167 WAT [1281] STATEMENT:  CREATE TABLE "public"."votes" (
+	    "post_id" integer,
+	    "user_id" interger,
+	    PRIMARY KEY ("post_id"),
+	    PRIMARY KEY ("user_id")
+	);
+	
+2023-10-27 05:52:26.743 WAT [1281] ERROR:  multiple primary keys for table "votes" are not allowed at character 112
+2023-10-27 05:52:26.743 WAT [1281] STATEMENT:  CREATE TABLE "public"."votes" (
+	    "post_id" integer,
+	    "user_id" integer,
+	    PRIMARY KEY ("post_id"),
+	    PRIMARY KEY ("user_id")
+	);
+	
+2023-10-27 05:55:14.320 WAT [1281] ERROR:  syntax error at or near "SELECT" at character 21
+2023-10-27 05:55:14.320 WAT [1281] STATEMENT:  SELECT * FROM posts
+	SELECT * FROM users
+2023-10-27 05:57:56.092 WAT [1281] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_fkey"
+2023-10-27 05:57:56.092 WAT [1281] DETAIL:  Key (post_id)=(99) is not present in table "posts".
+2023-10-27 05:57:56.092 WAT [1281] STATEMENT:  BEGIN;
+	INSERT INTO "public"."votes"("post_id", "user_id") VALUES(99, 100) RETURNING "post_id", "user_id";
+	
+2023-10-27 05:58:03.506 WAT [1281] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_fkey"
+2023-10-27 05:58:03.506 WAT [1281] DETAIL:  Key (post_id)=(99) is not present in table "posts".
+2023-10-27 05:58:03.506 WAT [1281] STATEMENT:  BEGIN;
+	INSERT INTO "public"."votes"("post_id", "user_id") VALUES(99, 2) RETURNING "post_id", "user_id";
+	
+2023-10-27 05:58:16.651 WAT [1281] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_user_id_fkey"
+2023-10-27 05:58:16.651 WAT [1281] DETAIL:  Key (user_id)=(99) is not present in table "users".
+2023-10-27 05:58:16.651 WAT [1281] STATEMENT:  BEGIN;
+	INSERT INTO "public"."votes"("post_id", "user_id") VALUES(3, 99) RETURNING "post_id", "user_id";
+	
+2023-10-27 05:58:34.929 WAT [1281] ERROR:  relation "public.votes" does not exist at character 358
+2023-10-27 05:58:34.929 WAT [1281] STATEMENT:  SELECT pg_class.oid, obj_description(pg_class.oid, 'pg_class') AS comment, COALESCE(spcname, (select spcname from pg_tablespace, pg_database where pg_tablespace.oid=dattablespace and datname='fastapi')) as tablespace, pg_get_viewdef(pg_class.oid,true) AS viewdef FROM pg_class LEFT JOIN pg_tablespace ON pg_tablespace.oid=reltablespace WHERE pg_class.oid = '"public"."votes"'::regclass::oid AND relkind='r';
+	SELECT attnum, attname, atttypid, attnotnull, format_type(atttypid,atttypmod), pg_get_expr(adbin, attrelid, true) AS adsrc, col_description(attrelid, attnum), typcategory, has_column_privilege(attrelid,attnum,'SELECT'), attgenerated, attidentity, (SELECT row_to_json(s) FROM pg_sequence s JOIN pg_depend d ON (d.classid='pg_class'::regclass AND s.seqrelid=d.objid) WHERE d.refclassid='pg_class'::regclass AND d.refobjid=attrelid AND d.refobjsubid=attnum LIMIT 1) as sequence_options
+	FROM pg_attribute
+	LEFT JOIN pg_type ON atttypid=pg_type.oid
+	LEFT JOIN pg_attrdef ON adrelid=attrelid AND adnum=attnum
+	WHERE attrelid = '"public"."votes"'::regclass AND NOT attisdropped
+	ORDER BY attnum;
+	SELECT pg_class.oid, pg_class.relname, indisunique, indisprimary, indisexclusion, indkey, pg_get_indexdef(indexrelid, 0, true) AS definition, ARRAY(select pg_get_indexdef(indexrelid, attnum, true) FROM pg_attribute WHERE attrelid = indexrelid ORDER BY attnum) AS expressions, obj_description(pg_class.oid, 'pg_class') AS comment, indoption, ARRAY(SELECT pg_collation.collname FROM unnest(indcollation) AS t(colid) LEFT JOIN pg_collation ON pg_collation.oid = colid) AS collations, ARRAY(SELECT pg_opclass.opcname FROM generate_series(0, indnatts-1) AS t(i) LEFT JOIN pg_opclass ON pg_opclass.oid = indclass[i]) AS opclasses, pg_get_expr(indpred,indrelid, true), amname FROM pg_index LEFT JOIN pg_class ON pg_class.oid = indexrelid LEFT JOIN pg_am ON pg_class.relam = pg_am.oid WHERE indrelid = '"public"."votes"'::regclass ORDER BY pg_class.oid; 
+	SELECT pg_constraint.oid, conname, contype, conkey, nspname AS fschema, relname AS ftable, confkey AS fkeys, pg_get_expr(conbin, conrelid, true), pg_get_constraintdef(pg_constraint.oid, true), confupdtype, confdeltype, obj_description(pg_constraint.oid, 'pg_constraint'), condeferrable, condeferred, connoinherit 
+	FROM pg_constraint
+	LEFT JOIN pg_class ON pg_class.oid = confrelid
+	LEFT JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+	WHERE conrelid = '"public"."votes"'::regclass;
+	SELECT pg_type.oid, ARRAY(SELECT enumlabel FROM pg_enum WHERE enumtypid=pg_type.oid ORDER BY enumsortorder)
+	FROM pg_type
+	WHERE pg_type.oid IN (SELECT atttypid FROM pg_attribute WHERE attrelid = '"public"."votes"'::regclass) AND typtype='e';
+	
+2023-10-27 06:03:34.978 WAT [1281] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-27 06:03:34.978 WAT [1281] DETAIL:  Key (post_id)=(99) is not present in table "users".
+2023-10-27 06:03:34.978 WAT [1281] STATEMENT:  BEGIN;
+	INSERT INTO "public"."votes"("user_id", "post_id") VALUES(2, 99) RETURNING "user_id", "post_id";
+	
+2023-10-27 06:25:48.073 WAT [1281] ERROR:  syntax error at or near "*" at character 8
+2023-10-27 06:25:48.073 WAT [1281] STATEMENT:  DELETE * FROM votes;
+2023-10-27 06:32:12.915 WAT [12722] LOG:  unexpected EOF on client connection with an open transaction
+2023-10-27 06:34:26.350 WAT [12942] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-27 06:34:26.350 WAT [12942] DETAIL:  Key (post_id)=(55) is not present in table "users".
+2023-10-27 06:34:26.350 WAT [12942] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (4, 55)
+2023-10-27 06:35:26.392 WAT [12942] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-27 06:35:26.392 WAT [12942] DETAIL:  Key (post_id)=(1) is not present in table "users".
+2023-10-27 06:35:26.392 WAT [12942] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (4, 1)
+2023-10-27 06:44:28.005 WAT [1281] ERROR:  column reference "id" is ambiguous at character 8
+2023-10-27 06:44:28.005 WAT [1281] STATEMENT:  SELECT id, email FROM posts LEFT JOIN users ON posts.owner_id = users.id
+2023-10-27 06:47:28.331 WAT [878] LOG:  received SIGHUP, reloading configuration files
+2023-10-27 06:47:35.162 WAT [878] LOG:  received smart shutdown request
+2023-10-27 06:47:35.165 WAT [13150] FATAL:  terminating connection due to administrator command
+2023-10-27 06:47:35.167 WAT [878] LOG:  background worker "logical replication launcher" (PID 888) exited with exit code 1
+2023-10-27 06:47:35.185 WAT [883] LOG:  shutting down
+2023-10-27 06:47:35.198 WAT [878] LOG:  database system is shut down
+2023-10-27 14:14:35.728 WAT [1011] LOG:  starting PostgreSQL 12.15 on x86_64-apple-darwin17.7.0, compiled by Apple LLVM version 10.0.0 (clang-1000.10.44.4), 64-bit
+2023-10-27 14:14:35.731 WAT [1011] LOG:  listening on IPv6 address "::1", port 5432
+2023-10-27 14:14:35.732 WAT [1011] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2023-10-27 14:14:35.733 WAT [1011] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2023-10-27 14:14:35.788 WAT [1012] LOG:  database system was shut down at 2023-10-27 06:47:35 WAT
+2023-10-27 14:14:35.804 WAT [1011] LOG:  database system is ready to accept connections
+2023-10-27 15:11:44.309 WAT [1011] LOG:  received SIGHUP, reloading configuration files
+2023-10-27 15:11:50.256 WAT [1011] LOG:  received smart shutdown request
+2023-10-27 15:11:50.259 WAT [3776] FATAL:  terminating connection due to administrator command
+2023-10-27 15:11:50.263 WAT [1011] LOG:  background worker "logical replication launcher" (PID 1018) exited with exit code 1
+2023-10-27 15:11:50.279 WAT [1013] LOG:  shutting down
+2023-10-27 15:11:50.300 WAT [1011] LOG:  database system is shut down
+2023-10-28 00:55:28.639 WAT [718] LOG:  starting PostgreSQL 12.15 on x86_64-apple-darwin17.7.0, compiled by Apple LLVM version 10.0.0 (clang-1000.10.44.4), 64-bit
+2023-10-28 00:55:28.642 WAT [718] LOG:  listening on IPv6 address "::1", port 5432
+2023-10-28 00:55:28.642 WAT [718] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2023-10-28 00:55:28.643 WAT [718] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2023-10-28 00:55:28.680 WAT [719] LOG:  database system was shut down at 2023-10-28 00:47:02 WAT
+2023-10-28 00:55:28.691 WAT [718] LOG:  database system is ready to accept connections
+2023-10-28 00:55:34.221 WAT [718] LOG:  received SIGHUP, reloading configuration files
+2023-10-28 01:15:46.608 WAT [815] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-28 01:15:46.608 WAT [815] DETAIL:  Key (post_id)=(13) is not present in table "users".
+2023-10-28 01:15:46.608 WAT [815] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (2, 13)
+2023-10-28 01:17:14.025 WAT [815] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-28 01:17:14.025 WAT [815] DETAIL:  Key (post_id)=(13) is not present in table "users".
+2023-10-28 01:17:14.025 WAT [815] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (2, 13)
+2023-10-28 01:19:00.607 WAT [815] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-28 01:19:00.607 WAT [815] DETAIL:  Key (post_id)=(17) is not present in table "users".
+2023-10-28 01:19:00.607 WAT [815] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (2, 17)
+2023-10-28 01:20:29.304 WAT [815] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-28 01:20:29.304 WAT [815] DETAIL:  Key (post_id)=(13) is not present in table "users".
+2023-10-28 01:20:29.304 WAT [815] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (2, 13)
+2023-10-28 01:20:56.507 WAT [815] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-28 01:20:56.507 WAT [815] DETAIL:  Key (post_id)=(13) is not present in table "users".
+2023-10-28 01:20:56.507 WAT [815] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (3, 13)
+2023-10-28 01:21:25.398 WAT [815] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-28 01:21:25.398 WAT [815] DETAIL:  Key (post_id)=(18) is not present in table "users".
+2023-10-28 01:21:25.398 WAT [815] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (3, 18)
+2023-10-28 01:24:24.072 WAT [815] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-28 01:24:24.072 WAT [815] DETAIL:  Key (post_id)=(13) is not present in table "users".
+2023-10-28 01:24:24.072 WAT [815] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (3, 13)
+2023-10-28 01:28:26.341 WAT [1488] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-28 01:28:26.341 WAT [1488] DETAIL:  Key (post_id)=(13) is not present in table "users".
+2023-10-28 01:28:26.341 WAT [1488] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (3, 13)
+2023-10-28 01:31:40.663 WAT [1609] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-28 01:31:40.663 WAT [1609] DETAIL:  Key (post_id)=(13) is not present in table "users".
+2023-10-28 01:31:40.663 WAT [1609] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (3, 13)
+2023-10-28 01:32:53.093 WAT [1609] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-28 01:32:53.093 WAT [1609] DETAIL:  Key (post_id)=(17) is not present in table "users".
+2023-10-28 01:32:53.093 WAT [1609] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (3, 17)
+2023-10-28 01:33:02.697 WAT [1609] ERROR:  insert or update on table "votes" violates foreign key constraint "votes_post_id_fkey"
+2023-10-28 01:33:02.697 WAT [1609] DETAIL:  Key (post_id)=(18) is not present in table "users".
+2023-10-28 01:33:02.697 WAT [1609] STATEMENT:  INSERT INTO votes (user_id, post_id) VALUES (3, 18)
+2023-10-28 01:36:20.309 WAT [1192] ERROR:  missing FROM-clause entry for table "post" at character 51
+2023-10-28 01:36:20.309 WAT [1192] STATEMENT:  select * from posts LEFT JOIN votes ON posts.id = votes.post.ud
+2023-10-28 03:09:01.546 WAT [1192] ERROR:  relation "public.posts" does not exist at character 358
+2023-10-28 03:09:01.546 WAT [1192] STATEMENT:  SELECT pg_class.oid, obj_description(pg_class.oid, 'pg_class') AS comment, COALESCE(spcname, (select spcname from pg_tablespace, pg_database where pg_tablespace.oid=dattablespace and datname='fastapi')) as tablespace, pg_get_viewdef(pg_class.oid,true) AS viewdef FROM pg_class LEFT JOIN pg_tablespace ON pg_tablespace.oid=reltablespace WHERE pg_class.oid = '"public"."posts"'::regclass::oid AND relkind='r';
+	SELECT attnum, attname, atttypid, attnotnull, format_type(atttypid,atttypmod), pg_get_expr(adbin, attrelid, true) AS adsrc, col_description(attrelid, attnum), typcategory, has_column_privilege(attrelid,attnum,'SELECT'), attgenerated, attidentity, (SELECT row_to_json(s) FROM pg_sequence s JOIN pg_depend d ON (d.classid='pg_class'::regclass AND s.seqrelid=d.objid) WHERE d.refclassid='pg_class'::regclass AND d.refobjid=attrelid AND d.refobjsubid=attnum LIMIT 1) as sequence_options
+	FROM pg_attribute
+	LEFT JOIN pg_type ON atttypid=pg_type.oid
+	LEFT JOIN pg_attrdef ON adrelid=attrelid AND adnum=attnum
+	WHERE attrelid = '"public"."posts"'::regclass AND NOT attisdropped
+	ORDER BY attnum;
+	SELECT pg_class.oid, pg_class.relname, indisunique, indisprimary, indisexclusion, indkey, pg_get_indexdef(indexrelid, 0, true) AS definition, ARRAY(select pg_get_indexdef(indexrelid, attnum, true) FROM pg_attribute WHERE attrelid = indexrelid ORDER BY attnum) AS expressions, obj_description(pg_class.oid, 'pg_class') AS comment, indoption, ARRAY(SELECT pg_collation.collname FROM unnest(indcollation) AS t(colid) LEFT JOIN pg_collation ON pg_collation.oid = colid) AS collations, ARRAY(SELECT pg_opclass.opcname FROM generate_series(0, indnatts-1) AS t(i) LEFT JOIN pg_opclass ON pg_opclass.oid = indclass[i]) AS opclasses, pg_get_expr(indpred,indrelid, true), amname FROM pg_index LEFT JOIN pg_class ON pg_class.oid = indexrelid LEFT JOIN pg_am ON pg_class.relam = pg_am.oid WHERE indrelid = '"public"."posts"'::regclass ORDER BY pg_class.oid; 
+	SELECT pg_constraint.oid, conname, contype, conkey, nspname AS fschema, relname AS ftable, confkey AS fkeys, pg_get_expr(conbin, conrelid, true), pg_get_constraintdef(pg_constraint.oid, true), confupdtype, confdeltype, obj_description(pg_constraint.oid, 'pg_constraint'), condeferrable, condeferred, connoinherit 
+	FROM pg_constraint
+	LEFT JOIN pg_class ON pg_class.oid = confrelid
+	LEFT JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+	WHERE conrelid = '"public"."posts"'::regclass;
+	SELECT pg_type.oid, ARRAY(SELECT enumlabel FROM pg_enum WHERE enumtypid=pg_type.oid ORDER BY enumsortorder)
+	FROM pg_type
+	WHERE pg_type.oid IN (SELECT atttypid FROM pg_attribute WHERE attrelid = '"public"."posts"'::regclass) AND typtype='e';
+	
+2023-10-28 03:19:53.896 WAT [1192] ERROR:  relation "public.posts" does not exist at character 358
+2023-10-28 03:19:53.896 WAT [1192] STATEMENT:  SELECT pg_class.oid, obj_description(pg_class.oid, 'pg_class') AS comment, COALESCE(spcname, (select spcname from pg_tablespace, pg_database where pg_tablespace.oid=dattablespace and datname='fastapi')) as tablespace, pg_get_viewdef(pg_class.oid,true) AS viewdef FROM pg_class LEFT JOIN pg_tablespace ON pg_tablespace.oid=reltablespace WHERE pg_class.oid = '"public"."posts"'::regclass::oid AND relkind='r';
+	SELECT attnum, attname, atttypid, attnotnull, format_type(atttypid,atttypmod), pg_get_expr(adbin, attrelid, true) AS adsrc, col_description(attrelid, attnum), typcategory, has_column_privilege(attrelid,attnum,'SELECT'), attgenerated, attidentity, (SELECT row_to_json(s) FROM pg_sequence s JOIN pg_depend d ON (d.classid='pg_class'::regclass AND s.seqrelid=d.objid) WHERE d.refclassid='pg_class'::regclass AND d.refobjid=attrelid AND d.refobjsubid=attnum LIMIT 1) as sequence_options
+	FROM pg_attribute
+	LEFT JOIN pg_type ON atttypid=pg_type.oid
+	LEFT JOIN pg_attrdef ON adrelid=attrelid AND adnum=attnum
+	WHERE attrelid = '"public"."posts"'::regclass AND NOT attisdropped
+	ORDER BY attnum;
+	SELECT pg_class.oid, pg_class.relname, indisunique, indisprimary, indisexclusion, indkey, pg_get_indexdef(indexrelid, 0, true) AS definition, ARRAY(select pg_get_indexdef(indexrelid, attnum, true) FROM pg_attribute WHERE attrelid = indexrelid ORDER BY attnum) AS expressions, obj_description(pg_class.oid, 'pg_class') AS comment, indoption, ARRAY(SELECT pg_collation.collname FROM unnest(indcollation) AS t(colid) LEFT JOIN pg_collation ON pg_collation.oid = colid) AS collations, ARRAY(SELECT pg_opclass.opcname FROM generate_series(0, indnatts-1) AS t(i) LEFT JOIN pg_opclass ON pg_opclass.oid = indclass[i]) AS opclasses, pg_get_expr(indpred,indrelid, true), amname FROM pg_index LEFT JOIN pg_class ON pg_class.oid = indexrelid LEFT JOIN pg_am ON pg_class.relam = pg_am.oid WHERE indrelid = '"public"."posts"'::regclass ORDER BY pg_class.oid; 
+	SELECT pg_constraint.oid, conname, contype, conkey, nspname AS fschema, relname AS ftable, confkey AS fkeys, pg_get_expr(conbin, conrelid, true), pg_get_constraintdef(pg_constraint.oid, true), confupdtype, confdeltype, obj_description(pg_constraint.oid, 'pg_constraint'), condeferrable, condeferred, connoinherit 
+	FROM pg_constraint
+	LEFT JOIN pg_class ON pg_class.oid = confrelid
+	LEFT JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+	WHERE conrelid = '"public"."posts"'::regclass;
+	SELECT pg_type.oid, ARRAY(SELECT enumlabel FROM pg_enum WHERE enumtypid=pg_type.oid ORDER BY enumsortorder)
+	FROM pg_type
+	WHERE pg_type.oid IN (SELECT atttypid FROM pg_attribute WHERE attrelid = '"public"."posts"'::regclass) AND typtype='e';
+	
+2023-10-28 03:32:06.250 WAT [6391] ERROR:  relation "posts" already exists
+2023-10-28 03:32:06.250 WAT [6391] STATEMENT:  
+	CREATE TABLE posts (
+		id SERIAL NOT NULL, 
+		title VARCHAR NOT NULL, 
+		PRIMARY KEY (id)
+	)
+	
+	
+2023-10-28 03:33:11.429 WAT [1192] ERROR:  relation "public.posts" does not exist at character 358
+2023-10-28 03:33:11.429 WAT [1192] STATEMENT:  SELECT pg_class.oid, obj_description(pg_class.oid, 'pg_class') AS comment, COALESCE(spcname, (select spcname from pg_tablespace, pg_database where pg_tablespace.oid=dattablespace and datname='fastapi')) as tablespace, pg_get_viewdef(pg_class.oid,true) AS viewdef FROM pg_class LEFT JOIN pg_tablespace ON pg_tablespace.oid=reltablespace WHERE pg_class.oid = '"public"."posts"'::regclass::oid AND relkind='r';
+	SELECT attnum, attname, atttypid, attnotnull, format_type(atttypid,atttypmod), pg_get_expr(adbin, attrelid, true) AS adsrc, col_description(attrelid, attnum), typcategory, has_column_privilege(attrelid,attnum,'SELECT'), attgenerated, attidentity, (SELECT row_to_json(s) FROM pg_sequence s JOIN pg_depend d ON (d.classid='pg_class'::regclass AND s.seqrelid=d.objid) WHERE d.refclassid='pg_class'::regclass AND d.refobjid=attrelid AND d.refobjsubid=attnum LIMIT 1) as sequence_options
+	FROM pg_attribute
+	LEFT JOIN pg_type ON atttypid=pg_type.oid
+	LEFT JOIN pg_attrdef ON adrelid=attrelid AND adnum=attnum
+	WHERE attrelid = '"public"."posts"'::regclass AND NOT attisdropped
+	ORDER BY attnum;
+	SELECT pg_class.oid, pg_class.relname, indisunique, indisprimary, indisexclusion, indkey, pg_get_indexdef(indexrelid, 0, true) AS definition, ARRAY(select pg_get_indexdef(indexrelid, attnum, true) FROM pg_attribute WHERE attrelid = indexrelid ORDER BY attnum) AS expressions, obj_description(pg_class.oid, 'pg_class') AS comment, indoption, ARRAY(SELECT pg_collation.collname FROM unnest(indcollation) AS t(colid) LEFT JOIN pg_collation ON pg_collation.oid = colid) AS collations, ARRAY(SELECT pg_opclass.opcname FROM generate_series(0, indnatts-1) AS t(i) LEFT JOIN pg_opclass ON pg_opclass.oid = indclass[i]) AS opclasses, pg_get_expr(indpred,indrelid, true), amname FROM pg_index LEFT JOIN pg_class ON pg_class.oid = indexrelid LEFT JOIN pg_am ON pg_class.relam = pg_am.oid WHERE indrelid = '"public"."posts"'::regclass ORDER BY pg_class.oid; 
+	SELECT pg_constraint.oid, conname, contype, conkey, nspname AS fschema, relname AS ftable, confkey AS fkeys, pg_get_expr(conbin, conrelid, true), pg_get_constraintdef(pg_constraint.oid, true), confupdtype, confdeltype, obj_description(pg_constraint.oid, 'pg_constraint'), condeferrable, condeferred, connoinherit 
+	FROM pg_constraint
+	LEFT JOIN pg_class ON pg_class.oid = confrelid
+	LEFT JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+	WHERE conrelid = '"public"."posts"'::regclass;
+	SELECT pg_type.oid, ARRAY(SELECT enumlabel FROM pg_enum WHERE enumtypid=pg_type.oid ORDER BY enumsortorder)
+	FROM pg_type
+	WHERE pg_type.oid IN (SELECT atttypid FROM pg_attribute WHERE attrelid = '"public"."posts"'::regclass) AND typtype='e';
+	
+2023-10-28 03:47:20.351 WAT [7551] ERROR:  relation "users" already exists
+2023-10-28 03:47:20.351 WAT [7551] STATEMENT:  
+	CREATE TABLE users (
+		id INTEGER NOT NULL, 
+		email VARCHAR NOT NULL, 
+		password VARCHAR NOT NULL, 
+		created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+	)
+	
+	
+2023-10-28 03:52:01.200 WAT [1192] ERROR:  relation "public.users" does not exist at character 358
+2023-10-28 03:52:01.200 WAT [1192] STATEMENT:  SELECT pg_class.oid, obj_description(pg_class.oid, 'pg_class') AS comment, COALESCE(spcname, (select spcname from pg_tablespace, pg_database where pg_tablespace.oid=dattablespace and datname='fastapi')) as tablespace, pg_get_viewdef(pg_class.oid,true) AS viewdef FROM pg_class LEFT JOIN pg_tablespace ON pg_tablespace.oid=reltablespace WHERE pg_class.oid = '"public"."users"'::regclass::oid AND relkind='r';
+	SELECT attnum, attname, atttypid, attnotnull, format_type(atttypid,atttypmod), pg_get_expr(adbin, attrelid, true) AS adsrc, col_description(attrelid, attnum), typcategory, has_column_privilege(attrelid,attnum,'SELECT'), attgenerated, attidentity, (SELECT row_to_json(s) FROM pg_sequence s JOIN pg_depend d ON (d.classid='pg_class'::regclass AND s.seqrelid=d.objid) WHERE d.refclassid='pg_class'::regclass AND d.refobjid=attrelid AND d.refobjsubid=attnum LIMIT 1) as sequence_options
+	FROM pg_attribute
+	LEFT JOIN pg_type ON atttypid=pg_type.oid
+	LEFT JOIN pg_attrdef ON adrelid=attrelid AND adnum=attnum
+	WHERE attrelid = '"public"."users"'::regclass AND NOT attisdropped
+	ORDER BY attnum;
+	SELECT pg_class.oid, pg_class.relname, indisunique, indisprimary, indisexclusion, indkey, pg_get_indexdef(indexrelid, 0, true) AS definition, ARRAY(select pg_get_indexdef(indexrelid, attnum, true) FROM pg_attribute WHERE attrelid = indexrelid ORDER BY attnum) AS expressions, obj_description(pg_class.oid, 'pg_class') AS comment, indoption, ARRAY(SELECT pg_collation.collname FROM unnest(indcollation) AS t(colid) LEFT JOIN pg_collation ON pg_collation.oid = colid) AS collations, ARRAY(SELECT pg_opclass.opcname FROM generate_series(0, indnatts-1) AS t(i) LEFT JOIN pg_opclass ON pg_opclass.oid = indclass[i]) AS opclasses, pg_get_expr(indpred,indrelid, true), amname FROM pg_index LEFT JOIN pg_class ON pg_class.oid = indexrelid LEFT JOIN pg_am ON pg_class.relam = pg_am.oid WHERE indrelid = '"public"."users"'::regclass ORDER BY pg_class.oid; 
+	SELECT pg_constraint.oid, conname, contype, conkey, nspname AS fschema, relname AS ftable, confkey AS fkeys, pg_get_expr(conbin, conrelid, true), pg_get_constraintdef(pg_constraint.oid, true), confupdtype, confdeltype, obj_description(pg_constraint.oid, 'pg_constraint'), condeferrable, condeferred, connoinherit 
+	FROM pg_constraint
+	LEFT JOIN pg_class ON pg_class.oid = confrelid
+	LEFT JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+	WHERE conrelid = '"public"."users"'::regclass;
+	SELECT pg_type.oid, ARRAY(SELECT enumlabel FROM pg_enum WHERE enumtypid=pg_type.oid ORDER BY enumsortorder)
+	FROM pg_type
+	WHERE pg_type.oid IN (SELECT atttypid FROM pg_attribute WHERE attrelid = '"public"."users"'::regclass) AND typtype='e';
+	
+2023-10-28 04:11:29.849 WAT [1192] ERROR:  relation "public.votes" does not exist at character 358
+2023-10-28 04:11:29.849 WAT [1192] STATEMENT:  SELECT pg_class.oid, obj_description(pg_class.oid, 'pg_class') AS comment, COALESCE(spcname, (select spcname from pg_tablespace, pg_database where pg_tablespace.oid=dattablespace and datname='fastapi')) as tablespace, pg_get_viewdef(pg_class.oid,true) AS viewdef FROM pg_class LEFT JOIN pg_tablespace ON pg_tablespace.oid=reltablespace WHERE pg_class.oid = '"public"."votes"'::regclass::oid AND relkind='r';
+	SELECT attnum, attname, atttypid, attnotnull, format_type(atttypid,atttypmod), pg_get_expr(adbin, attrelid, true) AS adsrc, col_description(attrelid, attnum), typcategory, has_column_privilege(attrelid,attnum,'SELECT'), attgenerated, attidentity, (SELECT row_to_json(s) FROM pg_sequence s JOIN pg_depend d ON (d.classid='pg_class'::regclass AND s.seqrelid=d.objid) WHERE d.refclassid='pg_class'::regclass AND d.refobjid=attrelid AND d.refobjsubid=attnum LIMIT 1) as sequence_options
+	FROM pg_attribute
+	LEFT JOIN pg_type ON atttypid=pg_type.oid
+	LEFT JOIN pg_attrdef ON adrelid=attrelid AND adnum=attnum
+	WHERE attrelid = '"public"."votes"'::regclass AND NOT attisdropped
+	ORDER BY attnum;
+	SELECT pg_class.oid, pg_class.relname, indisunique, indisprimary, indisexclusion, indkey, pg_get_indexdef(indexrelid, 0, true) AS definition, ARRAY(select pg_get_indexdef(indexrelid, attnum, true) FROM pg_attribute WHERE attrelid = indexrelid ORDER BY attnum) AS expressions, obj_description(pg_class.oid, 'pg_class') AS comment, indoption, ARRAY(SELECT pg_collation.collname FROM unnest(indcollation) AS t(colid) LEFT JOIN pg_collation ON pg_collation.oid = colid) AS collations, ARRAY(SELECT pg_opclass.opcname FROM generate_series(0, indnatts-1) AS t(i) LEFT JOIN pg_opclass ON pg_opclass.oid = indclass[i]) AS opclasses, pg_get_expr(indpred,indrelid, true), amname FROM pg_index LEFT JOIN pg_class ON pg_class.oid = indexrelid LEFT JOIN pg_am ON pg_class.relam = pg_am.oid WHERE indrelid = '"public"."votes"'::regclass ORDER BY pg_class.oid; 
+	SELECT pg_constraint.oid, conname, contype, conkey, nspname AS fschema, relname AS ftable, confkey AS fkeys, pg_get_expr(conbin, conrelid, true), pg_get_constraintdef(pg_constraint.oid, true), confupdtype, confdeltype, obj_description(pg_constraint.oid, 'pg_constraint'), condeferrable, condeferred, connoinherit 
+	FROM pg_constraint
+	LEFT JOIN pg_class ON pg_class.oid = confrelid
+	LEFT JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+	WHERE conrelid = '"public"."votes"'::regclass;
+	SELECT pg_type.oid, ARRAY(SELECT enumlabel FROM pg_enum WHERE enumtypid=pg_type.oid ORDER BY enumsortorder)
+	FROM pg_type
+	WHERE pg_type.oid IN (SELECT atttypid FROM pg_attribute WHERE attrelid = '"public"."votes"'::regclass) AND typtype='e';
+	
+2023-10-28 04:19:29.290 WAT [9734] ERROR:  relation "votes" already exists
+2023-10-28 04:19:29.290 WAT [9734] STATEMENT:  
+	CREATE TABLE votes (
+		user_id INTEGER NOT NULL, 
+		post_id INTEGER NOT NULL, 
+		PRIMARY KEY (user_id, post_id), 
+		FOREIGN KEY(post_id) REFERENCES users (id) ON DELETE CASCADE, 
+		FOREIGN KEY(user_id) REFERENCES users (id) ON DELETE CASCADE
+	)
+	
+	
